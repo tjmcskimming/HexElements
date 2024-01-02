@@ -1,39 +1,48 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class Controller : MonoBehaviour
 {
     public GameObject goHexPrism;
-    private GameObject[,] _hexGrid; // 2D array to store hexagonal prisms
+    
+    private Dictionary<Vector2Int, GameObject> _hexGrid; // Dictionary to store hexagonal prisms
     private const int GridWidth = 5;
     private const int GridHeight = 5;
+    private const float HexSize = 1;
+    private const float SqrtOf3 = 1.7320508075688772f; // Square root of 3
+    private const float HorzDist = SqrtOf3 * HexSize;
+    private const float VertDist = 1.5f * HexSize;
+    private Vector3 Pdir = new Vector3(-HorzDist/2, 0.0f, VertDist);
+    private Vector3 Qdir = new Vector3(HorzDist, 0.0f, 0.0f);
+    
     private Camera _camera;
     public float forceAmount = 3f;
-    
-    // Start is called before the first frame update
+
     void Start()
     {
         _camera = Camera.main;
-        _hexGrid = new GameObject[GridWidth, GridHeight];
+        _hexGrid = new Dictionary<Vector2Int, GameObject>();
 
         for (int i = 0; i < GridWidth; i++)
         {
             for (int j = 0; j < GridHeight; j++)
             {
-                Vector3 position = new Vector3(i + (0.5f * (j % 2)), -5 + Random.Range(-0.0f, 0.0f), j / 1.1547f); 
+                Vector3 position = i * Pdir + j * Qdir; 
                 GameObject hexObj = Instantiate(goHexPrism, position, Quaternion.Euler(90, 0, 0));
-                
-                //Set the spring joint anchor
+
+                // Set the spring joint anchor
                 SpringJoint springJoint = hexObj.GetComponent<SpringJoint>();
                 if (springJoint != null) 
                 {
                     springJoint.connectedAnchor = position;
                 }
                 
-                _hexGrid[i, j] = hexObj; // Store the hex prism in the array
+                Vector2Int key = new Vector2Int(i, j);
+                _hexGrid[key] = hexObj; // Store the hex prism in the dictionary
             }
         }
-    }
+    } 
     
     void Update()
     {
@@ -54,5 +63,4 @@ public class Controller : MonoBehaviour
         }
     }
 
-    
 }
